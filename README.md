@@ -1,4 +1,3 @@
-```markdown
 # Contacts Extractor
 
 Contacts Extractor is a tool that reads contact information from an Excel sheet and generates a CSV file formatted for use with various contact management systems. The generated CSV includes fields such as name, phone number, email, and other personal details.
@@ -140,6 +139,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License.
-```
-
-This Markdown file provides a detailed overview of the project, including installation instructions, usage guidelines, configuration details, an example, contribution guidelines, and licensing information. Adjust the details as needed to fit the specifics of your project.
