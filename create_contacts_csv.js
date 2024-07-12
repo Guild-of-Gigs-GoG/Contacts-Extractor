@@ -1,65 +1,87 @@
-const xlsx = require('xlsx');
-const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+import xlsx from "xlsx";
+const { readFile, utils } = xlsx;
+import { createObjectCsvWriter as createCsvWriter } from "csv-writer";
 
-// Define input and output file names
-const inputFile = 'D:/Projects/GoG-CSV-Data/GoG Entries.xlsx'; // Replace with your input file name
-const outputFile = 'output_data.csv';
+const inputFile = process.argv[2]; // Take the input file path from command line argument
+const outputFile = "output_data.csv";
 
 // Read the Excel file
-const workbook = xlsx.readFile(inputFile);
+let workbook = null;
+
+try {
+  workbook = readFile(inputFile);
+} catch (e) {
+  console.error("[Error] Source file not found!");
+  console.log("Usage: node create_contacts_csv.js <excel-file-path>");
+  process.exit(1);
+}
+
 const sheetName = workbook.SheetNames[0]; // Assuming the first sheet
 const worksheet = workbook.Sheets[sheetName];
-const jsonData = xlsx.utils.sheet_to_json(worksheet);
+const jsonData = utils.sheet_to_json(worksheet);
 
-// Define the fieldnames for the output CSV
+// Define the field names for the output CSV
 const csvWriter = createCsvWriter({
   path: outputFile,
   header: [
-    { id: 'Name', title: 'Name' },
-    { id: 'Given Name', title: 'Given Name' },
-    { id: 'Additional Name', title: 'Additional Name' },
-    { id: 'Family Name', title: 'Family Name' },
-    { id: 'Yomi Name', title: 'Yomi Name' },
-    { id: 'Given Name Yomi', title: 'Given Name Yomi' },
-    { id: 'Additional Name Yomi', title: 'Additional Name Yomi' },
-    { id: 'Family Name Yomi', title: 'Family Name Yomi' },
-    { id: 'Name Prefix', title: 'Name Prefix' },
-    { id: 'Name Suffix', title: 'Name Suffix' },
-    { id: 'Initials', title: 'Initials' },
-    { id: 'Nickname', title: 'Nickname' },
-    { id: 'Short Name', title: 'Short Name' },
-    { id: 'Maiden Name', title: 'Maiden Name' },
-    { id: 'File As', title: 'File As' },
-    { id: 'Birthday', title: 'Birthday' },
-    { id: 'Gender', title: 'Gender' },
-    { id: 'Location', title: 'Location' },
-    { id: 'Billing Information', title: 'Billing Information' },
-    { id: 'Directory Server', title: 'Directory Server' },
-    { id: 'Mileage', title: 'Mileage' },
-    { id: 'Occupation', title: 'Occupation' },
-    { id: 'Hobby', title: 'Hobby' },
-    { id: 'Sensitivity', title: 'Sensitivity' },
-    { id: 'Priority', title: 'Priority' },
-    { id: 'Subject', title: 'Subject' },
-    { id: 'Notes', title: 'Notes' },
-    { id: 'Language', title: 'Language' },
-    { id: 'Photo', title: 'Photo' },
-    { id: 'Group Membership', title: 'Group Membership' },
-    { id: 'Phone 1 - Type', title: 'Phone 1 - Type' },
-    { id: 'Phone 1 - Value', title: 'Phone 1 - Value' },
+    { id: "Name", title: "Name" },
+    { id: "Given Name", title: "Given Name" },
+    { id: "Additional Name", title: "Additional Name" },
+    { id: "Family Name", title: "Family Name" },
+    { id: "Yomi Name", title: "Yomi Name" },
+    { id: "Given Name Yomi", title: "Given Name Yomi" },
+    { id: "Additional Name Yomi", title: "Additional Name Yomi" },
+    { id: "Family Name Yomi", title: "Family Name Yomi" },
+    { id: "Name Prefix", title: "Name Prefix" },
+    { id: "Name Suffix", title: "Name Suffix" },
+    { id: "Initials", title: "Initials" },
+    { id: "Nickname", title: "Nickname" },
+    { id: "Short Name", title: "Short Name" },
+    { id: "Maiden Name", title: "Maiden Name" },
+    { id: "File As", title: "File As" },
+    { id: "Birthday", title: "Birthday" },
+    { id: "Gender", title: "Gender" },
+    { id: "Location", title: "Location" },
+    { id: "Billing Information", title: "Billing Information" },
+    { id: "Directory Server", title: "Directory Server" },
+    { id: "Mileage", title: "Mileage" },
+    { id: "Occupation", title: "Occupation" },
+    { id: "Hobby", title: "Hobby" },
+    { id: "Sensitivity", title: "Sensitivity" },
+    { id: "Priority", title: "Priority" },
+    { id: "Subject", title: "Subject" },
+    { id: "Notes", title: "Notes" },
+    { id: "Language", title: "Language" },
+    { id: "Photo", title: "Photo" },
+    { id: "Group Membership", title: "Group Membership" },
+    { id: "Phone 1 - Type", title: "Phone 1 - Type" },
+    { id: "Phone 1 - Value", title: "Phone 1 - Value" },
   ],
 });
 
-const records = jsonData.map(row => {
+const getGroupName = (isTech) => {
+  if (
+    isTech &&
+    (isTech.toLowerCase().startsWith("y") ||
+      ["y", "yes", "yes", "yes"].includes(isTech.toLowerCase()))
+  ) {
+    return `[GoG] (Techie)`;
+  } else {
+    return `[GoG] (Non-Tech)`;
+  }
+};
+
+const records = jsonData.map((row) => {
   const fullName = row["Full Name"];
-  const givenName = fullName.split(' ')[0];
-  const familyName = fullName.split(' ').slice(-1).join(' ');
+  const givenName = fullName.split(" ")[0];
+  const familyName = fullName.split(" ").slice(-1).join(" ");
   const phoneNumber = row["Contact Information (WhatsApp Number)"];
+  const isTechie = row["isTechie?"];
 
   return {
-    "Name": fullName,
+    Name: `${fullName} ${getGroupName(isTechie)}`,
     "Given Name": givenName,
-    "Additional Name": "",
+    "Additional Name": getGroupName(isTechie),
     "Family Name": familyName,
     "Yomi Name": "",
     "Given Name Yomi": "",
@@ -67,25 +89,25 @@ const records = jsonData.map(row => {
     "Family Name Yomi": "",
     "Name Prefix": "",
     "Name Suffix": "",
-    "Initials": "",
-    "Nickname": "",
+    Initials: "",
+    Nickname: "",
     "Short Name": "",
     "Maiden Name": "",
     "File As": "",
-    "Birthday": "",
-    "Gender": "",
-    "Location": "",
+    Birthday: "",
+    Gender: "",
+    Location: "",
     "Billing Information": "",
     "Directory Server": "",
-    "Mileage": "",
-    "Occupation": "",
-    "Hobby": "",
-    "Sensitivity": "",
-    "Priority": "",
-    "Subject": "",
-    "Notes": "",
-    "Language": "",
-    "Photo": "",
+    Mileage: "",
+    Occupation: "",
+    Hobby: "",
+    Sensitivity: "",
+    Priority: "",
+    Subject: "",
+    Notes: "",
+    Language: "",
+    Photo: "",
     "Group Membership": "* myContacts",
     "Phone 1 - Type": "Mobile",
     "Phone 1 - Value": phoneNumber,
@@ -93,7 +115,6 @@ const records = jsonData.map(row => {
 });
 
 // Write the records to the CSV file
-csvWriter.writeRecords(records)
-  .then(() => {
-    console.log('CSV file has been created successfully.');
-  });
+csvWriter.writeRecords(records).then(() => {
+  console.log("CSV file has been created successfully.");
+});
