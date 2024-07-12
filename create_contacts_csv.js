@@ -71,12 +71,29 @@ const getGroupName = (isTech) => {
   }
 };
 
-const records = jsonData.map((row) => {
+const getIsVerified = (isVerified) => {
+  if (
+    isVerified &&
+    (isVerified.toLowerCase().startsWith("y") ||
+      ["y", "yes", "yes", "yes"].includes(isVerified.toLowerCase()))
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+let records = jsonData.map((row) => {
   const fullName = row["Full Name"];
   const givenName = fullName.split(" ")[0];
   const familyName = fullName.split(" ").slice(-1).join(" ");
   const phoneNumber = row["Contact Information (WhatsApp Number)"];
+  const isVerified = row["Verified"];
   const isTechie = row["isTechie?"];
+
+  if (!getIsVerified(isVerified)) {
+    return null;
+  }
 
   return {
     Name: `${fullName} ${getGroupName(isTechie)}`,
@@ -113,6 +130,8 @@ const records = jsonData.map((row) => {
     "Phone 1 - Value": phoneNumber,
   };
 });
+
+records = records.filter((record) => record !== null);
 
 // Write the records to the CSV file
 csvWriter.writeRecords(records).then(() => {
